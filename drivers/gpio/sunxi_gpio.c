@@ -98,8 +98,7 @@ int sunxi_name_to_gpio(const char *name)
 {
 	int group = 0;
 	int groupsize = 9 * 32;
-	long pin;
-	char *eptr;
+	long pin = 0;
 
 	if (*name == 'P' || *name == 'p')
 		name++;
@@ -109,9 +108,16 @@ int sunxi_name_to_gpio(const char *name)
 		name++;
 	}
 
-	pin = simple_strtol(name, &eptr, 10);
-	if (!*name || *eptr)
-		return -1;
+	for (;;) {
+		if (*name == 0)
+			break;
+		if (*name < '0' || *name > '9')
+			return -1;
+		pin *= 10;
+		pin += *name - '0';
+		name++;
+	}
+
 	if (pin < 0 || pin > groupsize || group >= 9)
 		return -1;
 	return group * 32 + pin;
