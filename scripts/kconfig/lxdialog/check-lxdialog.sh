@@ -14,6 +14,13 @@ ldflags()
 				exit
 			fi
 		done
+		for lib in ncursesw ncurses curses ; do
+
+            	if [ -f /usr/lib/lib${lib}.${ext} ];then
+                	echo "-l${lib}"
+                	exit                                                                                                                  
+            	fi
+		done  
 	done
 	exit 1
 }
