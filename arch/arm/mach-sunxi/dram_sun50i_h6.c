@@ -42,6 +42,7 @@ struct dram_para {
 static void mctl_sys_init(struct dram_para *para);
 static void mctl_com_init(struct dram_para *para);
 static void mctl_set_timing_lpddr3(struct dram_para *para);
+static void mctl_set_master_priority(void);
 static void mctl_channel_init(struct dram_para *para);
 
 static void mctl_core_init(struct dram_para *para)
@@ -55,6 +56,7 @@ static void mctl_core_init(struct dram_para *para)
 	default:
 		panic("Unsupported DRAM type!");
 	};
+	mctl_set_master_priority();
 	mctl_channel_init(para);
 }
 
@@ -202,7 +204,7 @@ static void mctl_set_timing_lpddr3(struct dram_para *para)
 	u8 txsabort	= 4;
 	u8 txsfast	= 4;
 
-	u8 tcl		= 5; /* CL 10 */
+	u8 tcl		= 5; /* CL 12 */
 	u8 tcwl		= 3; /* CWL 6 */
 	u8 t_rdata_en	= twtr_sa + 8;
 
@@ -325,7 +327,7 @@ static void mctl_set_addrmap(struct dram_para *para)
 	if (ranks == 2)
 		mctl_ctl->addrmap[0] = rows + cols - 3;
 	else
-		mctl_ctl->addrmap[0] = 0x0F;
+		mctl_ctl->addrmap[0] = 0x1F;
 
 	/* Banks, hardcoded to 8 banks now */
 	mctl_ctl->addrmap[1] = (cols - 2) | (cols - 2) << 8 | (cols - 2) << 16;
@@ -581,7 +583,9 @@ static void mctl_channel_init(struct dram_para *para)
 	}
 
 	/* TODO: non-LPDDR3 types */
-	mctl_phy_pir_init(0xf562 | BIT(10));
+	mctl_phy_pir_init(PIR_ZCAL | PIR_DCAL | PIR_PHYRST | PIR_DRAMINIT |
+			  PIR_QSGATE | PIR_RDDSKW | PIR_WRDSKW | PIR_RDEYE |
+			  PIR_WREYE);
 
 	/* TODO: non-LPDDR3 types */
 	for (i = 0; i < 4; i++)
@@ -610,6 +614,26 @@ static void mctl_channel_init(struct dram_para *para)
 		clrbits_le32(&mctl_phy->dx[i].gcr[3], ~0x3ffff);
 	udelay(10);
 
+	if (readl(&mctl_phy->pgsr[0]) & 0x400000)
+	{
+		/*
+		 * Detect single rank.
+		 * TODO: also detect half DQ.
+		 */
+		if ((readl(&mctl_phy->dx[0].rsr[0]) & 0x3) == 2 &&
+		    (readl(&mctl_phy->dx[1].rsr[0]) & 0x3) == 2 &&
+		    (readl(&mctl_phy->dx[2].rsr[0]) & 0x3) == 2 &&
+		    (readl(&mctl_phy->dx[3].rsr[0]) & 0x3) == 2) {
+			para->ranks = 1;
+			/* Restart DRAM initialization from scratch. */
+			mctl_core_init(para);
+			return;
+		}
+		else {
+			panic("This DRAM setup is currently not supported.\n");
+		}
+	}
+
 	if (readl(&mctl_phy->pgsr[0]) & 0xff00000) {
 		/* Oops! There's something wrong! */
 		debug("PLL = %x\n", readl(0x3001010));
@@ -635,6 +659,12 @@ static void mctl_channel_init(struct dram_para *para)
 static void mctl_auto_detect_dram_size(struct dram_para *para)
 {
 	/* TODO: non-LPDDR3, half DQ */
+	/*
+	 * Detect rank number by the code in mctl_channel_init. Furtherly
+	 * when DQ detection is available it will also be executed there.
+	 */
+	mctl_core_init(para);
+
 	/* detect row address bits */
 	para->cols = 8;
 	para->rows = 18;
@@ -702,9 +732,7 @@ unsigned long long sunxi_dram_init(void)
 
 	size = mctl_calc_size(&para);
 
-	clrsetbits_le32(&mctl_com->cr, 0xf0, (size / 1024 / 1024) & 0xf0);
-
-	mctl_set_master_priority();
+	clrsetbits_le32(&mctl_com->cr, 0xf0, (size >> (10 + 10 + 4)) & 0xf0);
 
 	return size;
 };

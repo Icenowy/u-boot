@@ -261,6 +261,27 @@ struct sunxi_mctl_phy_reg {
 };
 check_member(sunxi_mctl_phy_reg, dx[3].reserved_0xf0, 0xaf0);
 
+#define PIR_INIT	BIT(0)
+#define PIR_ZCAL	BIT(1)
+#define PIR_CA		BIT(2)
+#define PIR_PLLINIT	BIT(4)
+#define PIR_DCAL	BIT(5)
+#define PIR_PHYRST	BIT(6)
+#define PIR_DRAMRST	BIT(7)
+#define PIR_DRAMINIT	BIT(8)
+#define PIR_WL		BIT(9)
+#define PIR_QSGATE	BIT(10)
+#define PIR_WLADJ	BIT(11)
+#define PIR_RDDSKW	BIT(12)
+#define PIR_WRDSKW	BIT(13)
+#define PIR_RDEYE	BIT(14)
+#define PIR_WREYE	BIT(15)
+#define PIR_VREF	BIT(17)
+#define PIR_CTLDINIT	BIT(18)
+#define PIR_DQS2DQ	BIT(20)
+#define PIR_DCALPSE	BIT(29)
+#define PIR_ZCALBYP	BIT(30)
+
 #define DCR_LPDDR3	(1 << 0)
 #define DCR_DDR3	(3 << 0)
 #define DCR_DDR4	(4 << 0)
