@@ -195,7 +195,7 @@ config MACH_SUN50I_H5
 
 config MACH_SUN50I_H6
 	bool "sun50i (Allwinner H6)"
-	select ARM64
+	select CPU_V7
 	select SUPPORT_SPL
 	select FIT
 	select SPL_LOAD_FIT
