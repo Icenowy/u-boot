@@ -74,7 +74,7 @@ void lcdc_tcon0_mode_set(struct sunxi_lcdc_reg * const lcdc,
 {
 	int bp, clk_delay, total, val;
 
-#ifndef CONFIG_SUNXI_DE2
+#if !defined(CONFIG_SUNXI_DE2) && !defined(CONFIG_SUNXI_DE3)
 	/* Use tcon0 */
 	clrsetbits_le32(&lcdc->ctrl, SUNXI_LCDC_CTRL_IO_MAP_MASK,
 			SUNXI_LCDC_CTRL_IO_MAP_TCON0);
@@ -100,7 +100,8 @@ void lcdc_tcon0_mode_set(struct sunxi_lcdc_reg * const lcdc,
 	writel(SUNXI_LCDC_TCON0_TIMING_V_TOTAL(total) |
 	       SUNXI_LCDC_TCON0_TIMING_V_BP(bp), &lcdc->tcon0_timing_v);
 
-#if defined(CONFIG_VIDEO_LCD_IF_PARALLEL) || defined(CONFIG_VIDEO_DE2)
+#if defined(CONFIG_VIDEO_LCD_IF_PARALLEL) || defined(CONFIG_VIDEO_DE2) || \
+    defined(CONFIG_VIDEO_DE3)
 	writel(SUNXI_LCDC_X(mode->hsync_len.typ) |
 	       SUNXI_LCDC_Y(mode->vsync_len.typ), &lcdc->tcon0_timing_sync);
 
@@ -151,7 +152,7 @@ void lcdc_tcon1_mode_set(struct sunxi_lcdc_reg * const lcdc,
 {
 	int bp, clk_delay, total, val, yres;
 
-#ifndef CONFIG_SUNXI_DE2
+#if !defined(CONFIG_SUNXI_DE2) && !defined(CONFIG_SUNXI_DE3)
 	/* Use tcon1 */
 	clrsetbits_le32(&lcdc->ctrl, SUNXI_LCDC_CTRL_IO_MAP_MASK,
 			SUNXI_LCDC_CTRL_IO_MAP_TCON1);
@@ -217,7 +218,8 @@ void lcdc_pll_set(struct sunxi_ccm_reg *ccm, int tcon, int dotclock,
 	bool use_mipi_pll = false;
 
 	if (tcon == 0) {
-#if defined(CONFIG_VIDEO_LCD_IF_PARALLEL) || defined(CONFIG_SUNXI_DE2)
+#if defined(CONFIG_VIDEO_LCD_IF_PARALLEL) || defined(CONFIG_SUNXI_DE2) || \
+    defined(CONFIG_SUNXI_DE3)
 		min_m = 6;
 		max_m = 127;
 #endif
@@ -236,7 +238,8 @@ void lcdc_pll_set(struct sunxi_ccm_reg *ccm, int tcon, int dotclock,
 	 * not sync to higher frequencies.
 	 */
 	for (m = min_m; m <= max_m; m++) {
-#ifndef CONFIG_SUNXI_DE2
+		/* No not-double clock on DE2 */
+#if !defined(CONFIG_SUNXI_DE2)
 		n = (m * dotclock) / 3000;
 
 		if ((n >= 9) && (n <= 127)) {
@@ -250,12 +253,15 @@ void lcdc_pll_set(struct sunxi_ccm_reg *ccm, int tcon, int dotclock,
 			}
 		}
 
+#if !defined(CONFIG_SUNXI_DE3)
 		/* These are just duplicates */
 		if (!(m & 1))
 			continue;
 #endif
+#endif
 
-		/* No double clock on DE2 */
+		/* No double clock on DE3 */
+#if !defined(CONFIG_SUNXI_DE3)
 		n = (m * dotclock) / 6000;
 		if ((n >= 9) && (n <= 127)) {
 			value = (6000 * n) / m;
@@ -267,6 +273,8 @@ void lcdc_pll_set(struct sunxi_ccm_reg *ccm, int tcon, int dotclock,
 				best_double = 1;
 			}
 		}
+#endif
+		/* TODO: four times clock on DE3 */
 	}
 
 #ifdef CONFIG_MACH_SUN6I
@@ -297,21 +305,29 @@ void lcdc_pll_set(struct sunxi_ccm_reg *ccm, int tcon, int dotclock,
 	if (tcon == 0) {
 		u32 pll;
 
+#ifndef CONFIG_SUNXI_DE3
 		if (use_mipi_pll)
 			pll = CCM_LCD_CH0_CTRL_MIPI_PLL;
 		else if (best_double)
 			pll = CCM_LCD_CH0_CTRL_PLL3_2X;
 		else
 			pll = CCM_LCD_CH0_CTRL_PLL3;
-#ifndef CONFIG_SUNXI_DE2
-		writel(CCM_LCD_CH0_CTRL_GATE | CCM_LCD_CH0_CTRL_RST | pll,
-		       &ccm->lcd0_ch0_clk_cfg);
-#else
+#if defined(CONFIG_SUNXI_DE2)
 		writel(CCM_LCD_CH0_CTRL_GATE | CCM_LCD_CH0_CTRL_RST | pll,
 		       &ccm->lcd0_clk_cfg);
+#else
+		writel(CCM_LCD_CH0_CTRL_GATE | CCM_LCD_CH0_CTRL_RST | pll,
+		       &ccm->lcd0_ch0_clk_cfg);
+#endif
+#else
+		/* MIPI PLL not usable on DE3 SoCs. */
+		(void) use_mipi_pll;
+		/* TODO: four times clock */
+		pll = CCM_LCD0_CTRL_PLL_VIDEO0;
+		writel(CCM_LCD0_CTRL_GATE | pll, &ccm->tcon_lcd0_clk_cfg);
 #endif
 	}
-#ifndef CONFIG_SUNXI_DE2
+#if !defined(CONFIG_SUNXI_DE2) && !defined(CONFIG_SUNXI_DE3)
 	else {
 		writel(CCM_LCD_CH1_CTRL_GATE |
 		       (best_double ? CCM_LCD_CH1_CTRL_PLL3_2X :
