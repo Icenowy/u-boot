@@ -663,6 +663,13 @@ config USB3_VBUS_PIN
 	---help---
 	See USB1_VBUS_PIN help text.
 
+config HDMI_DDC_EN
+	string "HDMI DDC enable pin"
+	default ""
+	---help---
+	Set the enable pin for HDMI DDC. This takes a string in the format
+	understood by sunxi_name_to_gpio, e.g. PH1 for pin 1 of port H.
+
 config I2C0_ENABLE
 	bool "Enable I2C/TWI controller 0"
 	default y if MACH_SUN4I || MACH_SUN5I || MACH_SUN7I || MACH_SUN8I_R40

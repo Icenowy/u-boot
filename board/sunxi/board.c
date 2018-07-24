@@ -193,7 +193,7 @@ enum env_location env_get_location(enum env_operation op, int prio)
 /* add board specific code here */
 int board_init(void)
 {
-	__maybe_unused int id_pfr1, ret, satapwr_pin, macpwr_pin;
+	__maybe_unused int id_pfr1, ret, satapwr_pin, macpwr_pin, ddc_en_pin;
 
 	gd->bd->bi_boot_params = (PHYS_SDRAM_0 + 0x100);
 
@@ -241,6 +241,11 @@ int board_init(void)
 	macpwr_pin = sunxi_name_to_gpio(CONFIG_MACPWR);
 	gpio_request(macpwr_pin, "macpwr");
 	gpio_direction_output(macpwr_pin, 1);
+#endif
+#ifdef CONFIG_HDMI_DDC_EN
+	ddc_en_pin = sunxi_name_to_gpio(CONFIG_HDMI_DDC_EN);
+	gpio_request(ddc_en_pin, "ddc_en");
+	gpio_direction_output(ddc_en_pin, 1);
 #endif
 
 #ifdef CONFIG_DM_I2C
