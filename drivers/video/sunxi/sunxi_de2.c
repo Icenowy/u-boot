@@ -104,7 +104,7 @@ static void sunxi_de2_mode_set(int mux, const struct display_timing *mode,
 		memset(ch, 0, (channel == 0) ?
 			sizeof(struct de_vi) : sizeof(struct de_ui));
 	}
-	memset(de_bld_regs, 0, sizeof(struct de_bld));
+	memset(de_bld_regs, 0, SUNXI_DE2_MUX_BLD_SZ);
 
 	writel(0x00000101, &de_bld_regs->fcolor_ctl);
 
