@@ -155,7 +155,7 @@
 #define CONFIG_SYS_MMC_MAX_DEVICE	4
 #endif
 
-#ifndef CONFIG_MACH_SUN8I_V3S
+#ifndef CONFIG_MACH_SUN8I_V3_V3S_S3_S3L
 /* 64MB of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (64 << 20))
 #else
@@ -328,7 +328,7 @@ extern int soft_i2c_gpio_scl;
  * 32M uncompressed kernel, 16M compressed kernel, 1M fdt,
  * 1M script, 1M pxe and the ramdisk at the end.
  */
-#ifndef CONFIG_MACH_SUN8I_V3S
+#ifndef CONFIG_MACH_SUN8I_V3_V3S_S3_S3L
 #define BOOTM_SIZE     __stringify(0xa000000)
 #define KERNEL_ADDR_R  __stringify(SDRAM_OFFSET(2000000))
 #define FDT_ADDR_R     __stringify(SDRAM_OFFSET(3000000))

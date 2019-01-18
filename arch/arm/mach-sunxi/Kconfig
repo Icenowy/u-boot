@@ -140,6 +140,18 @@ config MACH_SUNXI_H3_H5
 	select SUNXI_GEN_SUN6I
 	select SUPPORT_SPL
 
+config MACH_SUN8I_V3_V3S_S3_S3L
+	bool
+	select CPU_V7A
+	select CPU_V7_HAS_NONSEC
+	select CPU_V7_HAS_VIRT
+	select ARCH_SUPPORT_PSCI
+	select SUNXI_GEN_SUN6I
+	select SUNXI_DRAM_DW
+	select SUNXI_DRAM_DW_16BIT
+	select SUPPORT_SPL
+	select ARMV7_BOOT_SEC_DEFAULT if OLD_SUNXI_KERNEL_COMPAT
+
 # TODO: try out A80's 8GiB DRAM space
 config SUNXI_DRAM_MAX_SIZE
 	hex
@@ -253,17 +265,9 @@ config MACH_SUN8I_R40
 	select SUNXI_DRAM_DW
 	select SUNXI_DRAM_DW_32BIT
 
-config MACH_SUN8I_V3S
-	bool "sun8i (Allwinner V3s)"
-	select CPU_V7A
-	select CPU_V7_HAS_NONSEC
-	select CPU_V7_HAS_VIRT
-	select ARCH_SUPPORT_PSCI
-	select SUNXI_GEN_SUN6I
-	select SUNXI_DRAM_DW
-	select SUNXI_DRAM_DW_16BIT
-	select SUPPORT_SPL
-	select ARMV7_BOOT_SEC_DEFAULT if OLD_SUNXI_KERNEL_COMPAT
+config MACH_SUN8I_V3S_S3L
+	bool "sun8i (Allwinner V3s/S3L)"
+	select MACH_SUN8I_V3_V3S_S3_S3L
 
 config MACH_SUN9I
 	bool "sun9i (Allwinner A80)"
@@ -317,7 +321,7 @@ config MACH_SUN8I
 	default y if MACH_SUN8I_A83T
 	default y if MACH_SUNXI_H3_H5
 	default y if MACH_SUN8I_R40
-	default y if MACH_SUN8I_V3S
+	default y if MACH_SUN8I_V3_V3S_S3_S3L
 
 config RESERVE_ALLWINNER_BOOT0_HEADER
 	bool "reserve space for Allwinner boot0 header"
@@ -354,13 +358,13 @@ config SUNXI_DRAM_LPDDR3
 
 choice
 	prompt "DRAM Type and Timing"
-	default SUNXI_DRAM_DDR3_1333 if !MACH_SUN8I_V3S
-	default SUNXI_DRAM_DDR2_V3S if MACH_SUN8I_V3S
+	default SUNXI_DRAM_DDR3_1333 if !MACH_SUN8I_V3S_S3L
+	default SUNXI_DRAM_DDR2_V3S if MACH_SUN8I_V3S_S3L
 
 config SUNXI_DRAM_DDR3_1333
 	bool "DDR3 1333"
 	select SUNXI_DRAM_DDR3
-	depends on !MACH_SUN8I_V3S
+	depends on !MACH_SUN8I_V3S_S3L
 	---help---
 	This option is the original only supported memory type, which suits
 	many H3/H5/A64 boards available now.
@@ -375,7 +379,7 @@ config SUNXI_DRAM_LPDDR3_STOCK
 config SUNXI_DRAM_DDR2_V3S
 	bool "DDR2 found in V3s chip"
 	select SUNXI_DRAM_DDR2
-	depends on MACH_SUN8I_V3S
+	depends on MACH_SUN8I_V3S_S3L
 	---help---
 	This option is only for the DDR2 memory chip which is co-packaged in
 	Allwinner V3s SoC.
@@ -396,7 +400,7 @@ config DRAM_CLK
 	default 648 if MACH_SUN8I_R40
 	default 312 if MACH_SUN6I || MACH_SUN8I
 	default 360 if MACH_SUN4I || MACH_SUN5I || MACH_SUN7I || \
-		       MACH_SUN8I_V3S
+		       MACH_SUN8I_V3S_S3L
 	default 672 if MACH_SUN50I
 	default 744 if MACH_SUN50I_H6
 	---help---
@@ -417,7 +421,7 @@ config DRAM_ZQ
 	int "sunxi dram zq value"
 	default 123 if MACH_SUN4I || MACH_SUN5I || MACH_SUN6I || MACH_SUN8I
 	default 127 if MACH_SUN7I
-	default 14779 if MACH_SUN8I_V3S
+	default 14779 if MACH_SUN8I_V3S_S3L
 	default 3881979 if MACH_SUN8I_R40 || MACH_SUN50I_H6
 	default 4145117 if MACH_SUN9I
 	default 3881915 if MACH_SUN50I
@@ -733,7 +737,7 @@ config VIDEO_SUNXI
 	depends on !MACH_SUN8I_A83T
 	depends on !MACH_SUNXI_H3_H5
 	depends on !MACH_SUN8I_R40
-	depends on !MACH_SUN8I_V3S
+	depends on !MACH_SUN8I_V3_V3S_S3_S3L
 	depends on !MACH_SUN9I
 	depends on !MACH_SUN50I
 	depends on !MACH_SUN50I_H6
