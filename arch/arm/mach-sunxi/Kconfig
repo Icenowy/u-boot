@@ -275,7 +275,7 @@ config MACH_SUN9I
 
 config MACH_SUN50I
 	bool "sun50i (Allwinner A64)"
-	select ARM64
+	select CPU_V7A
 	select SPI
 	select DM_I2C
 	select DM_SPI if SPI
@@ -294,14 +294,14 @@ config MACH_SUN50I
 
 config MACH_SUN50I_H5
 	bool "sun50i (Allwinner H5)"
-	select ARM64
+	select CPU_V7A
 	select MACH_SUNXI_H3_H5
 	select FIT
 	select SPL_LOAD_FIT
 
 config MACH_SUN50I_H6
 	bool "sun50i (Allwinner H6)"
-	select ARM64
+	select CPU_V7A
 	select SUPPORT_SPL
 	select FIT
 	select PHY_SUN4I_USB
