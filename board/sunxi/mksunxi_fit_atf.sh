@@ -6,11 +6,16 @@
 # usage: $0 <dt_name> [<dt_name> [<dt_name] ...]
 
 [ -z "$BL31" ] && BL31="bl31.bin"
+[ -z "$HYP" ] && HYP="hyp.bin"
 
 if [ ! -f $BL31 ]; then
 	echo "WARNING: BL31 file $BL31 NOT found, resulting binary is non-functional" >&2
 	echo "Please read the section on ARM Trusted Firmware (ATF) in board/sunxi/README.sunxi64" >&2
 	BL31=/dev/null
+fi
+
+if [ ! -f $HYP ]; then
+	HYP=
 fi
 
 if grep -q "^CONFIG_MACH_SUN50I_H6=y" .config; then
@@ -46,6 +51,19 @@ cat << __HEADER_EOF
 		};
 __HEADER_EOF
 
+if [ "x$HYP" != "x" ]; then
+cat << __HYP_EOF
+		hyp {
+			description = "Standalone Hypervisor";
+			data = /incbin/("$HYP");
+			type = "firmware";
+			arch = "arm64";
+			compression = "none";
+			load = <0x40010000>;
+		};
+__HYP_EOF
+fi
+
 cnt=1
 for dtname in $*
 do
@@ -74,7 +92,7 @@ do
 		config_$cnt {
 			description = "$(basename $dtname .dtb)";
 			firmware = "uboot";
-			loadables = "atf";
+			loadables = "atf"$([ "x$HYP" != "x" ] && echo ", \"hyp\"");
 			fdt = "fdt_$cnt";
 		};
 __CONF_SECTION_EOF
