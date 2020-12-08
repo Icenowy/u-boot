@@ -157,6 +157,12 @@ config SUN50I_H6_GEN
 	Select this for sunxi SoCs which have H6 like peripherals, clocks
 	and memory map.
 
+config SUNXI_LOWMEM
+	bool
+	---help---
+	Select this for sunxi SoCs that will usually have a low memory
+	amount and need a small memory footprint U-Boot.
+
 config SUNXI_DRAM_DW
 	bool
 	---help---
@@ -311,6 +317,7 @@ config MACH_SUN8I_V3S
 	select SUNXI_GEN_SUN6I
 	select SUNXI_DRAM_DW
 	select SUNXI_DRAM_DW_16BIT
+	select SUNXI_LOWMEM
 	select SUPPORT_SPL
 	select ARMV7_BOOT_SEC_DEFAULT if OLD_SUNXI_KERNEL_COMPAT
 
