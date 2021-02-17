@@ -181,6 +181,9 @@
 #ifdef CONFIG_MACH_SUN50I_H616
 #define CONFIG_SPL_MAX_SIZE		0xbfa0		/* 48 KiB */
 #define LOW_LEVEL_SRAM_STACK		0x58000
+#elif defined CONFIG_MACH_SUN8I_V831
+#define CONFIG_SPL_MAX_SIZE		0x7fa0		/* 32 KiB */
+#define LOW_LEVEL_SRAM_STACK		0x38000
 #else
 #define CONFIG_SPL_MAX_SIZE		0x7fa0		/* 32 KiB */
 /* end of SRAM A2 on H6 for now */

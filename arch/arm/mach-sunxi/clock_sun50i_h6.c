@@ -22,11 +22,13 @@ void clock_init_safe(void)
 	writel(CCM_AHB3_DEFAULT, &ccm->ahb3_cfg);
 	writel(CCM_APB1_DEFAULT, &ccm->apb1_cfg);
 
+#if !defined(CONFIG_MACH_SUN8I_V831)
 	/*
 	 * The mux and factor are set, but the clock will be enabled in
 	 * DRAM initialization code.
 	 */
 	writel(MBUS_CLK_SRC_PLL6X2 | MBUS_CLK_M(3), &ccm->mbus_cfg);
+#endif
 }
 #endif
 
@@ -68,10 +70,10 @@ void clock_set_pll1(unsigned int clk)
 
 	/* clk = 24*n/p, p is ignored if clock is >288MHz */
 	writel(CCM_PLL1_CTRL_EN | CCM_PLL1_LOCK_EN | CCM_PLL1_CLOCK_TIME_2 |
-#ifdef CONFIG_MACH_SUN50I_H616
+#if defined(CONFIG_MACH_SUN50I_H616) || defined(CONFIG_MACH_SUN8I_V831)
 	       CCM_PLL1_OUT_EN |
 #endif
-	       CCM_PLL1_CTRL_N(clk / 24000000), &ccm->pll1_cfg);
+	       CCM_PLL1_CTRL_N(clk / 24000000 - 1), &ccm->pll1_cfg);
 	while (!(readl(&ccm->pll1_cfg) & CCM_PLL1_LOCK)) {}
 
 	/* Switch CPU to PLL1 */

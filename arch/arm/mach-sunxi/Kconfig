@@ -36,6 +36,12 @@ config DRAM_SUN8I_A83T
 	  Select this dram controller driver for Sun8i platforms,
 	  for A83T SOC.
 
+config DRAM_SUN8I_V831
+	bool
+	help
+	  Select this dram controller driver for Sun8i platforms,
+	  for V831/V833 SOC.
+
 config DRAM_SUN9I
 	bool
 	help
@@ -150,9 +156,6 @@ config SUNXI_GEN_SUN6I
 
 config SUN50I_H6_GEN
 	bool
-	select FIT
-	select SPL_LOAD_FIT
-	select SUPPORT_SPL
 	---help---
 	Select this for sunxi SoCs which have H6 like peripherals, clocks
 	and memory map.
@@ -321,6 +324,14 @@ config MACH_SUN8I_V3S
 	select SUPPORT_SPL
 	select ARMV7_BOOT_SEC_DEFAULT if OLD_SUNXI_KERNEL_COMPAT
 
+config MACH_SUN8I_V831
+	bool "sun8i (Allwinner V831/V833)"
+	select CPU_V7A
+	select SUN50I_H6_GEN
+	select DRAM_SUN8I_V831
+	select SUNXI_LOWMEM
+	select SUPPORT_SPL
+
 config MACH_SUN9I
 	bool "sun9i (Allwinner A80)"
 	select CPU_V7A
@@ -361,12 +372,18 @@ config MACH_SUN50I_H6
 	select ARM64
 	select PHY_SUN4I_USB
 	select DRAM_SUN50I_H6
+	select FIT
+	select SPL_LOAD_FIT
+	select SUPPORT_SPL
 
 config MACH_SUN50I_H616
 	bool "sun50i (Allwinner H616)"
 	select ARM64
 	select DRAM_SUN50I_H616
 	select SUN50I_H6_GEN
+	select FIT
+	select SPL_LOAD_FIT
+	select SUPPORT_SPL
 
 endchoice
 
@@ -405,7 +422,7 @@ config ARM_BOOT_HOOK_RMR
 	This allows both the SPL and the U-Boot proper to be entered in
 	either mode and switch to AArch64 if needed.
 
-if SUNXI_DRAM_DW || DRAM_SUN50I_H6
+if SUNXI_DRAM_DW || DRAM_SUN50I_H6 || DRAM_SUN8I_V831
 config SUNXI_DRAM_DDR3
 	bool
 
@@ -453,10 +470,18 @@ config SUNXI_DRAM_H6_DDR3_1333
 config SUNXI_DRAM_DDR2_V3S
 	bool "DDR2 found in V3s chip"
 	select SUNXI_DRAM_DDR2
-	depends on MACH_SUN8I_V3S
+	depends on MACH_SUN8I_V3S || MACH_SUN8I_V831
 	---help---
 	This option is only for the DDR2 memory chip which is co-packaged in
 	Allwinner V3s SoC.
+
+config SUNXI_DRAM_DDR2_V831
+	bool "DDR2 found in V831 chip"
+	select SUNXI_DRAM_DDR2
+	depends on MACH_SUN8I_V831
+	---help---
+	This option is only for the DDR2 memory chip which is co-packaged in
+	Allwinner V831 SoC.
 
 endchoice
 endif
@@ -611,6 +636,7 @@ config SYS_CONFIG_NAME
 	default "sun6i" if MACH_SUN6I
 	default "sun7i" if MACH_SUN7I
 	default "sun8i" if MACH_SUN8I
+	default "sun8i" if MACH_SUN8I_V831
 	default "sun9i" if MACH_SUN9I
 	default "sun50i" if MACH_SUN50I
 	default "sun50i" if MACH_SUN50I_H6
